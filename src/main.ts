@@ -49,6 +49,8 @@ async function bootstrap() {
       'Content-Type',
       'Authorization',
       'X-Requested-With',
+      'X-Signature',
+      'X-Timestamp',
       'ngrok-skip-browser-warning',
     ],
     exposedHeaders: ['Authorization'],
