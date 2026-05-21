@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, RequestMethod, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 const defaultCorsOrigins = [
@@ -30,7 +30,9 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const port = Number(process.env.PORT ?? 3003);
 
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v1', {
+    exclude: [{ path: 'metrics', method: RequestMethod.GET }],
+  });
 
   app.enableCors({
     origin: (

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -10,6 +10,8 @@ import { validateEnv } from './config/env.validation';
 import { RequestSigningGuard } from './guards/request-signing.guard';
 import { AuthModule } from './modules/auth/auth.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
+import { MetricsModule } from './modules/metrics/metrics.module';
+import { HttpMetricsMiddleware } from './modules/metrics/http-metrics.middleware';
 
 @Module({
   imports: [
@@ -24,6 +26,7 @@ import { RealtimeModule } from './modules/realtime/realtime.module';
     EventEmitterModule.forRoot(),
     AuthModule,
     RealtimeModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -31,4 +34,8 @@ import { RealtimeModule } from './modules/realtime/realtime.module';
     { provide: APP_GUARD, useClass: RequestSigningGuard },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(HttpMetricsMiddleware).forRoutes('*');
+  }
+}

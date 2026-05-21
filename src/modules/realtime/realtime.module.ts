@@ -11,6 +11,7 @@ import { RealtimeAuthService } from './services/realtime-auth.service';
 import { RoomAuthorizationService } from './services/room-authorization.service';
 import { VolunteerLocationService } from './services/volunteer-location.service';
 import { VolunteerPresenceService } from './services/volunteer-presence.service';
+import { MetricsModule } from '../metrics/metrics.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { VolunteerPresenceService } from './services/volunteer-presence.service'
       ShipmentLocationHistory,
       User,
     ]),
+    MetricsModule,
   ],
   providers: [
     RealtimeGateway,
