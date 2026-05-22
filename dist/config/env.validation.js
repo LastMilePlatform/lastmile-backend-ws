@@ -1,0 +1,77 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.validateEnv = validateEnv;
+function getRequiredString(config, key) {
+    const value = config[key];
+    if (typeof value !== 'string' || value.trim().length === 0) {
+        throw new Error(`Missing required environment variable: ${key}`);
+    }
+    return value;
+}
+function getNumber(config, key, fallback) {
+    const raw = config[key];
+    if ((raw === undefined || raw === null || raw === '') &&
+        fallback !== undefined) {
+        return fallback;
+    }
+    const parsed = Number(raw);
+    if (Number.isNaN(parsed)) {
+        throw new Error(`Environment variable ${key} must be a valid number`);
+    }
+    return parsed;
+}
+function validateEnv(config) {
+    const databaseUrl = typeof config.DATABASE_URL === 'string' &&
+        config.DATABASE_URL.trim().length > 0
+        ? config.DATABASE_URL
+        : undefined;
+    const dbHost = typeof config.DB_HOST === 'string' && config.DB_HOST.trim().length > 0
+        ? config.DB_HOST
+        : undefined;
+    const dbUsername = typeof config.DB_USERNAME === 'string' &&
+        config.DB_USERNAME.trim().length > 0
+        ? config.DB_USERNAME
+        : undefined;
+    const dbPassword = typeof config.DB_PASSWORD === 'string' &&
+        config.DB_PASSWORD.trim().length > 0
+        ? config.DB_PASSWORD
+        : undefined;
+    const dbName = typeof config.DB_NAME === 'string' && config.DB_NAME.trim().length > 0
+        ? config.DB_NAME
+        : undefined;
+    const googleClientId = typeof config.GOOGLE_CLIENT_ID === 'string' &&
+        config.GOOGLE_CLIENT_ID.trim().length > 0
+        ? config.GOOGLE_CLIENT_ID
+        : undefined;
+    if (!databaseUrl) {
+        return {
+            PORT: getNumber(config, 'PORT', 3000),
+            DATABASE_URL: databaseUrl,
+            DB_HOST: getRequiredString(config, 'DB_HOST'),
+            DB_PORT: getNumber(config, 'DB_PORT', 5432),
+            DB_USERNAME: getRequiredString(config, 'DB_USERNAME'),
+            DB_PASSWORD: getRequiredString(config, 'DB_PASSWORD'),
+            DB_NAME: getRequiredString(config, 'DB_NAME'),
+            JWT_SECRET: getRequiredString(config, 'JWT_SECRET'),
+            GOOGLE_CLIENT_ID: googleClientId,
+            REQUEST_SIGNING_SECRET: typeof config.REQUEST_SIGNING_SECRET === 'string'
+                ? config.REQUEST_SIGNING_SECRET
+                : undefined,
+        };
+    }
+    return {
+        PORT: getNumber(config, 'PORT', 3000),
+        DATABASE_URL: databaseUrl,
+        DB_HOST: dbHost,
+        DB_PORT: getNumber(config, 'DB_PORT', 5432),
+        DB_USERNAME: dbUsername,
+        DB_PASSWORD: dbPassword,
+        DB_NAME: dbName,
+        JWT_SECRET: getRequiredString(config, 'JWT_SECRET'),
+        GOOGLE_CLIENT_ID: googleClientId,
+        REQUEST_SIGNING_SECRET: typeof config.REQUEST_SIGNING_SECRET === 'string'
+            ? config.REQUEST_SIGNING_SECRET
+            : undefined,
+    };
+}
+//# sourceMappingURL=env.validation.js.map
