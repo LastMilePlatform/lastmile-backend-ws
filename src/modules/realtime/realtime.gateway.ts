@@ -183,7 +183,7 @@ export class RealtimeGateway
       );
 
       this.metricsService.wsConnectedUsers.inc();
-      this.metricsService.activeUsers.set(this.server.sockets.sockets.size);
+      this.metricsService.activeUsers.set(this.server.sockets.size);
 
       await socket.join(`user:${authUser.userId}`);
 
@@ -210,7 +210,7 @@ export class RealtimeGateway
   handleDisconnect(client: Socket): void {
     this.metricsService.wsConnectedUsers.dec();
     this.metricsService.activeUsers.set(
-      Math.max(0, this.server.sockets.sockets.size - 1),
+      Math.max(0, this.server.sockets.size - 1),
     );
 
     const disconnected = this.volunteerPresenceService.unregisterConnection(
