@@ -15,7 +15,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { In, Repository } from 'typeorm';
-import { Server, Socket } from 'socket.io';
+import { Server, Socket, Namespace } from 'socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient } from 'redis';
 import { randomUUID } from 'crypto';
@@ -104,7 +104,7 @@ export class RealtimeGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
 {
   @WebSocketServer()
-  server!: Server;
+  server!: Namespace;
 
   private readonly logger = new Logger(RealtimeGateway.name);
   private readonly staleThresholdMs = 60_000;
