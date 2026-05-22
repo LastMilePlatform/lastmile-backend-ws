@@ -45,6 +45,7 @@ import {
 } from './services/volunteer-location.service';
 import { VolunteerPresenceService } from './services/volunteer-presence.service';
 import { VolunteerLocationWsDto } from './dto/volunteer-location-ws.dto';
+import { MetricsService } from '../metrics/metrics.service';
 
 type AuthenticatedSocket = Socket & {
   data: {
@@ -125,6 +126,7 @@ export class RealtimeGateway
     private readonly volunteerPresenceService: VolunteerPresenceService,
     private readonly volunteerLocationService: VolunteerLocationService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly metricsService: MetricsService,
   ) {}
 
   async afterInit(server: Server): Promise<void> {
@@ -180,6 +182,9 @@ export class RealtimeGateway
         user.role,
       );
 
+      this.metricsService.wsConnectedUsers.inc();
+      this.metricsService.activeUsers.set(this.server.sockets.sockets.size);
+
       await socket.join(`user:${authUser.userId}`);
 
       if (user.role === UserRole.ORGANIZER) {
@@ -203,6 +208,11 @@ export class RealtimeGateway
   }
 
   handleDisconnect(client: Socket): void {
+    this.metricsService.wsConnectedUsers.dec();
+    this.metricsService.activeUsers.set(
+      Math.max(0, this.server.sockets.sockets.size - 1),
+    );
+
     const disconnected = this.volunteerPresenceService.unregisterConnection(
       client.id,
     );
@@ -874,6 +884,8 @@ export class RealtimeGateway
 
   @OnEvent('message.sent')
   async onMessageSent(event: MessageSentEvent): Promise<void> {
+    this.metricsService.realtimeEvents.inc({ event: 'message.sent' });
+    this.metricsService.wsEventsEmitted.inc({ event: 'chat.message.created' });
     const message = await this.messagesRepository.findOne({
       where: { id: event.messageId },
     });
@@ -977,6 +989,8 @@ export class RealtimeGateway
 
   @OnEvent('auction.sold')
   onAuctionSold(event: AuctionSoldEvent): void {
+    this.metricsService.realtimeEvents.inc({ event: 'auction.sold' });
+    this.metricsService.wsEventsEmitted.inc({ event: 'auction.sold' });
     this.server
       .to(`campaign:${event.campaignId}:auctions`)
       .emit('auction.sold', {
@@ -991,6 +1005,8 @@ export class RealtimeGateway
 
   @OnEvent('bid.placed')
   onBidPlaced(event: BidPlacedEvent): void {
+    this.metricsService.realtimeEvents.inc({ event: 'bid.placed' });
+    this.metricsService.wsEventsEmitted.inc({ event: 'auction.bid.placed' });
     this.server
       .to(`auction:${event.auctionId}:bids`)
       .emit('auction.bid.placed', {
