@@ -24,6 +24,7 @@ const makeServer = () => ({
   to: jest.fn().mockReturnThis(),
   emit: jest.fn(),
   adapter: jest.fn(),
+  sockets: { sockets: { size: 1 } },
 });
 
 const makeShipment = (o: any = {}) => ({
@@ -118,6 +119,14 @@ const makeGateway = (overrides: any = {}) => {
     ...overrides.volunteerLocationService,
   };
   const eventEmitter = { emit: jest.fn(), ...overrides.eventEmitter };
+  const metricsService = {
+    wsConnectedUsers: { inc: jest.fn(), dec: jest.fn(), set: jest.fn() },
+    wsEventsEmitted: { inc: jest.fn() },
+    realtimeEvents: { inc: jest.fn() },
+    activeUsers: { inc: jest.fn(), dec: jest.fn(), set: jest.fn() },
+    sessionsStarted: { inc: jest.fn() },
+    ...overrides.metricsService,
+  };
 
   const gw = new RealtimeGateway(
     messagesRepo,
@@ -130,6 +139,7 @@ const makeGateway = (overrides: any = {}) => {
     volunteerPresenceService,
     volunteerLocationService,
     eventEmitter,
+    metricsService,
   );
   gw.server = makeServer() as any;
   return {
