@@ -24,6 +24,7 @@ const makeServer = () => ({
   to: jest.fn().mockReturnThis(),
   emit: jest.fn(),
   adapter: jest.fn(),
+  sockets: { sockets: { size: 1 } },
 });
 
 const makeShipment = (o: any = {}) => ({
